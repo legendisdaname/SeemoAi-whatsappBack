@@ -5,13 +5,18 @@ import { v4 as uuidv4 } from "uuid";
 import { Client, LocalAuth, MessageMedia } from "whatsapp-web.js";
 import { config } from "../config";
 import { SendMessageResponse, WhatsAppSession } from "../types";
+import { RateLimitService } from "./RateLimitService";
+import { validatePhoneNumber } from "../middlewares/security";
+import { logger } from "../utils/logger";
 
 export class WhatsAppService {
   private sessions: Map<string, { client: Client; session: WhatsAppSession }> =
     new Map();
+  private rateLimitService: RateLimitService;
 
   constructor() {
     this.ensureSessionDirectory();
+    this.rateLimitService = new RateLimitService();
   }
 
   private ensureSessionDirectory(): void {
@@ -131,16 +136,36 @@ export class WhatsAppService {
       return { success: false, error: "Session not ready" };
     }
 
+    // Validate phone number
+    if (!validatePhoneNumber(to)) {
+      return { success: false, error: `Invalid phone number format: ${to}` };
+    }
+
+    // Check rate limits
+    const rateLimitCheck = this.rateLimitService.canSendMessage(sessionId);
+    if (!rateLimitCheck.allowed) {
+      return { success: false, error: `Rate limit exceeded: ${rateLimitCheck.reason}` };
+    }
+
     try {
+      // Add random delay for anti-ban
+      await this.rateLimitService.addRandomDelay();
+
       // Format phone number
       const chatId = to.includes("@") ? to : `${to.replace(/\D/g, "")}@c.us`;
       const sentMessage = await sessionData.client.sendMessage(chatId, message);
+
+      // Record the message for rate limiting
+      this.rateLimitService.recordMessage(sessionId);
+      
+      logger.info(`Text message sent successfully from session ${sessionId} to ${to}`);
 
       return {
         success: true,
         messageId: sentMessage.id._serialized,
       };
     } catch (error) {
+      logger.error(`Failed to send text message from session ${sessionId}: ${error}`);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
@@ -164,7 +189,21 @@ export class WhatsAppService {
       return { success: false, error: "Session not ready" };
     }
 
+    // Validate phone number
+    if (!validatePhoneNumber(to)) {
+      return { success: false, error: `Invalid phone number format: ${to}` };
+    }
+
+    // Check rate limits
+    const rateLimitCheck = this.rateLimitService.canSendMessage(sessionId);
+    if (!rateLimitCheck.allowed) {
+      return { success: false, error: `Rate limit exceeded: ${rateLimitCheck.reason}` };
+    }
+
     try {
+      // Add random delay for anti-ban
+      await this.rateLimitService.addRandomDelay();
+
       const media = MessageMedia.fromFilePath(mediaPath);
       const chatId = to.includes("@") ? to : `${to.replace(/\D/g, "")}@c.us`;
 
@@ -172,11 +211,17 @@ export class WhatsAppService {
         caption: caption || undefined,
       });
 
+      // Record the message for rate limiting
+      this.rateLimitService.recordMessage(sessionId);
+      
+      logger.info(`Media message sent successfully from session ${sessionId} to ${to}`);
+
       return {
         success: true,
         messageId: sentMessage.id._serialized,
       };
     } catch (error) {
+      logger.error(`Failed to send media message from session ${sessionId}: ${error}`);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",

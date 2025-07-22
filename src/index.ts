@@ -6,6 +6,14 @@ import { config } from './config';
 import routes from './routes';
 import { errorHandler, notFound } from './middlewares/errorHandler';
 import { logger } from './utils/logger';
+import { 
+  rateLimiter, 
+  validateApiKey, 
+  sanitizeInput, 
+  validateRequestSize, 
+  securityHeaders, 
+  requestLogger 
+} from './middlewares/security';
 
 const app = express();
 
@@ -94,19 +102,26 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-// Middleware
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Security and logging middleware
+app.use(securityHeaders);
+app.use(requestLogger);
+app.use(rateLimiter);
+app.use(validateRequestSize);
+
+// Body parsing middleware
+app.use(express.json({ limit: config.maxRequestSize }));
+app.use(express.urlencoded({ extended: true, limit: config.maxRequestSize }));
+
+// CORS configuration
 app.use(cors({
   origin: config.corsOrigin,
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
 }));
 
-// Logging middleware
-app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.path} - ${req.ip}`);
-  next();
-});
+// Input sanitization
+app.use(sanitizeInput);
 
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {

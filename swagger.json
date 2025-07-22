@@ -11,7 +11,7 @@
      },
      "servers": [
           {
-               "url": "http://localhost:3001/api",
+               "url": "https://platform.seemoai.com/api",
                "description": "Development server"
           }
      ],
