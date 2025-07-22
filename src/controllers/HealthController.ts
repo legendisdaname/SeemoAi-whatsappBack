@@ -4,6 +4,7 @@ import { WhatsAppService } from "../services/WhatsAppService";
 import { RateLimitService } from "../services/RateLimitService";
 import { config } from "../config";
 import { logger } from "../utils/logger";
+import { createCorsConfig } from "../utils/cors";
 
 export class HealthController {
   private whatsappService: WhatsAppService;
@@ -66,6 +67,10 @@ export class HealthController {
           messageDelayMs: config.messageDelayMs,
           maxMessagesPerHour: config.maxMessagesPerHour,
           enableAntiBan: config.enableAntiBan,
+          cors: {
+            allowedOrigins: createCorsConfig().allowedOrigins,
+            allowCredentials: createCorsConfig().allowCredentials,
+          },
         },
       };
 
@@ -156,6 +161,43 @@ export class HealthController {
       const response: ApiResponse = {
         success: true,
         message: `Rate limits reset for session ${sessionId}`,
+      };
+
+      res.json(response);
+    } catch (error) {
+      const response: ApiResponse = {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+
+      res.status(500).json(response);
+    }
+  };
+
+  /**
+   * @swagger
+   * /api/health/cors:
+   *   get:
+   *     summary: Get CORS configuration information
+   *     tags: [System]
+   *     responses:
+   *       200:
+   *         description: CORS configuration retrieved successfully
+   */
+  getCorsInfo = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const corsConfig = createCorsConfig();
+
+      const response: ApiResponse = {
+        success: true,
+        data: {
+          allowedOrigins: corsConfig.allowedOrigins,
+          allowCredentials: corsConfig.allowCredentials,
+          allowedMethods: corsConfig.allowedMethods,
+          allowedHeaders: corsConfig.allowedHeaders,
+          currentOrigin: req.headers.origin || 'No origin',
+          isAllowed: corsConfig.allowedOrigins.includes(req.headers.origin || ''),
+        },
       };
 
       res.json(response);

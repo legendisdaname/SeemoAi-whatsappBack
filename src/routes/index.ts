@@ -20,6 +20,7 @@ const healthController = new HealthController();
 router.get("/health", healthController.getHealth);
 router.get("/health/rate-limits", healthController.getRateLimitStatus);
 router.post("/health/rate-limits/:sessionId/reset", healthController.resetRateLimits);
+router.get("/health/cors", healthController.getCorsInfo);
 
 // Protected routes (require API key)
 router.use(validateApiKey);

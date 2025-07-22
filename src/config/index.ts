@@ -6,10 +6,10 @@ export const config = {
   // Server Configuration
   port: parseInt(process.env.PORT || "3001", 10),
   nodeEnv: process.env.NODE_ENV || "development",
-  apiBaseUrl: process.env.API_BASE_URL || "https://platform.seemoai.com/api",
+  apiBaseUrl: process.env.API_BASE_URL || "http://localhost:3001/api",
   
   // CORS Configuration
-  corsOrigin: process.env.CORS_ORIGIN || "https://platform.seemoai.com",
+  corsOrigin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ["http://localhost:3000"],
   
   // Session Management
   sessionPath: process.env.SESSION_PATH || "./sessions",

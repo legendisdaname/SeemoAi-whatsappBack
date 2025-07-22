@@ -14,6 +14,7 @@ import {
   securityHeaders, 
   requestLogger 
 } from './middlewares/security';
+import { getCorsOriginFunction } from './utils/cors';
 
 const app = express();
 
@@ -114,10 +115,11 @@ app.use(express.urlencoded({ extended: true, limit: config.maxRequestSize }));
 
 // CORS configuration
 app.use(cors({
-  origin: config.corsOrigin,
+  origin: getCorsOriginFunction(),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
 
 // Input sanitization

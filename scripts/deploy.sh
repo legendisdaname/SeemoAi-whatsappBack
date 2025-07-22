@@ -119,6 +119,6 @@ fi
 echo "2. Check logs:"
 echo "   tail -f logs/app.log"
 echo "3. Monitor health:"
-echo "   curl https://platform.seemoai.com/api/health"
+echo "   curl http://localhost:3001/api/health"
 echo ""
-echo "🔗 API Documentation: https://platform.seemoai.com/api-docs" 
+echo "🔗 API Documentation: http://localhost:3001/api-docs" 

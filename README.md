@@ -35,9 +35,9 @@ A robust, scalable WhatsApp messaging API built with TypeScript, Express, and wh
    ```
 
 4. **Access the API:**
-   - API Base: https://platform.seemoai.com/api
-- Documentation: https://platform.seemoai.com/api-docs
-- Health Check: https://platform.seemoai.com/api/health
+   - API Base: http://localhost:3001/api
+   - Documentation: http://localhost:3001/api-docs
+   - Health Check: http://localhost:3001/api/health
 
 ## API Endpoints
 
@@ -64,7 +64,7 @@ A robust, scalable WhatsApp messaging API built with TypeScript, Express, and wh
 | --------------- | --------------------------- | --------------------- |
 | `PORT`          | Server port                 | 3001                  |
 | `NODE_ENV`      | Environment                 | development           |
-| `CORS_ORIGIN`   | CORS origin                 | https://platform.seemoai.com |
+| `CORS_ORIGIN`   | CORS origin                 | http://localhost:3000 |
 | `SESSION_PATH`  | Session storage path        | ./sessions            |
 | `MAX_SESSIONS`  | Maximum concurrent sessions | 10                    |
 | `UPLOAD_PATH`   | File upload path            | ./uploads             |
@@ -75,7 +75,7 @@ A robust, scalable WhatsApp messaging API built with TypeScript, Express, and wh
 ### Create a Session
 
 ```bash
-curl -X POST https://platform.seemoai.com/api/sessions \
+curl -X POST http://localhost:3001/api/sessions \
   -H "Content-Type: application/json" \
   -d '{"sessionId": "my-session"}'
 ```
@@ -83,7 +83,7 @@ curl -X POST https://platform.seemoai.com/api/sessions \
 ### Send Text Message
 
 ```bash
-curl -X POST https://platform.seemoai.com/api/sessions/my-session/send-text \
+curl -X POST http://localhost:3001/api/sessions/my-session/send-text \
   -H "Content-Type: application/json" \
   -d '{
     "to": "1234567890",
@@ -94,7 +94,7 @@ curl -X POST https://platform.seemoai.com/api/sessions/my-session/send-text \
 ### Send Media Message
 
 ```bash
-curl -X POST https://platform.seemoai.com/api/sessions/my-session/send-media \
+curl -X POST http://localhost:3001/api/sessions/my-session/send-media \
   -F "to=1234567890" \
   -F "caption=Check this image!" \
   -F "file=@/path/to/image.jpg"
